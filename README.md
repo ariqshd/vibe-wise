@@ -54,6 +54,34 @@ Restart Claude Code, then run `/vibe-wise:learn` in your project.
 
 </details>
 
+## Get started on ZCode or OpenCode
+
+VibeWise also runs as plain `SKILL.md` skills — no plugin system or hooks needed.
+Python 3 is still required for the reset helper; nothing else is installed.
+
+Clone this repository, then from its root run:
+
+```sh
+# Preview first:
+python install.py --target all --dry-run
+
+# Install skills for both tools and add auto-restore to their global AGENTS.md:
+python install.py --target all \
+  --agents-md ~/.zcode/AGENTS.md \
+  --agents-md ~/.config/opencode/AGENTS.md
+```
+
+This installs two skills per tool — `vibe-wise-learn` and `vibe-wise-reset` — into
+`~/.zcode/skills/` (ZCode) and `~/.config/opencode/skills/` (OpenCode), and appends
+a clearly marked snippet to each AGENTS.md that restores active learning notes at
+session start (the equivalent of the Claude Code SessionStart hook). Both tools
+share the same `.vibe-wise/` notes inside a project, so you can learn in one and
+resume in the other. Adjust the `--agents-md` paths if your global instructions
+file lives elsewhere; pass `--uninstall` to remove everything again.
+
+Restart your session, then invoke the skill by name: `/vibe-wise-learn` (or ask
+for it) in your project, and `/vibe-wise-reset` to back up and restart onboarding.
+
 ## What it feels like
 
 You're building a Notion-style notes app: users sign in, create and edit private

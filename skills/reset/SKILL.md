@@ -10,12 +10,14 @@ Run this in the main conversation, only when explicitly invoked. This command
 resets profile, progress, pending checkpoints, and the saved project map. Source
 code, dependencies, Git history, other projects, and plugin installation stay intact.
 
-1. Run the read-only preview for the user's current project directory. Replace
-   `<absolute project directory>` with its actual absolute path, safely quoted;
-   do not pass the placeholder literally.
+1. Run the read-only preview for the user's current project directory. The
+   helper `reset.py` sits in this skill's directory (the folder containing the
+   SKILL.md you just read); substitute that actual absolute directory, safely
+   quoted, and do not pass the placeholder literally. On Windows, if `python3`
+   is unavailable, use `python`.
 
    ```sh
-   python3 "${CLAUDE_PLUGIN_ROOT}/skills/reset/reset.py" --cwd "<absolute project directory>"
+   python3 "<this skill's directory>/reset.py" --cwd "<absolute project directory>"
    ```
 
    The helper uses Learn's project-boundary and legacy-state lookup. If it reports
@@ -42,7 +44,10 @@ code, dependencies, Git history, other projects, and plugin installation stay in
    reset fails, report it and any backup path; don't claim success or start onboarding.
    Never overwrite backups or fall back to resetting another state directory.
 
-4. On success, show the backup path. Read `${CLAUDE_PLUGIN_ROOT}/skills/learn/SKILL.md` and resume Learn with
+4. On success, show the backup path. Read the SKILL.md of the bundled Learn
+   skill — the sibling directory beside this one, named `learn` (or
+   `vibe-wise-learn` when installed as a standalone skill; locate it with Glob
+   if unsure) — and resume Learn with
    the new incomplete profile. Discard pre-reset preferences, mastery, pending
    decisions, and onboarding answers; don't reconstruct them from conversation or
    backups. Inspect actual code to rebuild the map. Begin fresh onboarding with

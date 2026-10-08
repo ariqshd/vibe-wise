@@ -16,7 +16,7 @@ An ordinary build request in this mode retains that loop;
 only an explicit request to skip or pause bypasses it.
 Do not switch to a subagent or require manual coding by default.
 
-Use the Read tool for plugin guides instead of printing them with Bash `cat`.
+Use the Read tool for the bundled guides instead of printing them with Bash `cat`.
 Use Glob to discover optional learner-state files before reading them. A missing
 `.vibe-wise/` directory is normal first-time setup, not an error. If a shell
 check is necessary, handle absence with an explicit conditional that succeeds;

@@ -15,6 +15,18 @@ CONFIG = json.loads((ROOT / "hooks/hooks.json").read_text())
 REGISTRATION = CONFIG["hooks"]["SessionStart"][0]
 
 
+def symlinks_supported():
+    try:
+        with tempfile.TemporaryDirectory() as space:
+            (Path(space) / "probe").symlink_to(space, target_is_directory=True)
+            return True
+    except (OSError, NotImplementedError):
+        return False
+
+
+SYMLINKS = unittest.skipUnless(symlinks_supported(), "symlinks unavailable")
+
+
 class SessionStartTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="vibe-wise-test-")
@@ -48,8 +60,15 @@ class SessionStartTests(unittest.TestCase):
             "hook_event_name": "SessionStart", "source": source,
             "cwd": str(cwd or self.project),
         })
+        # Run the registered hook script with this interpreter: the registered
+        # `python3` name is absent (or a Store stub) on common Windows setups,
+        # and cmd.exe cannot expand the ${CLAUDE_PLUGIN_ROOT} template itself.
+        command = re.sub(
+            r"^python3\b", lambda _match: '"' + sys.executable + '"',
+            REGISTRATION["hooks"][0]["command"],
+        ).replace("${CLAUDE_PLUGIN_ROOT}", str(ROOT))
         result = subprocess.run(
-            REGISTRATION["hooks"][0]["command"], shell=True,
+            command, shell=True,
             input=payload, text=True, capture_output=True, timeout=5,
             # The hook needs a Python executable and its plugin location, not the
             # developer's credentials or unrelated environment configuration.
@@ -128,6 +147,7 @@ class SessionStartTests(unittest.TestCase):
         (child / ".git").write_text("gitdir: /another/repo/.git/worktrees/test")
         self.assertIsNone(self.run_hook(cwd=child))
 
+    @SYMLINKS
     def test_symlinked_new_state_does_not_fall_back_to_legacy(self):
         self.state().rename(self.project / ".sensible-vibes")
         (self.project / ".vibe-wise").symlink_to(self.root / "missing", target_is_directory=True)
@@ -217,6 +237,7 @@ class SessionStartTests(unittest.TestCase):
             (state / "profile.md").write_bytes(content)
             self.assertIsNone(self.run_hook())
 
+    @SYMLINKS
     def test_symlinked_profile_is_not_read(self):
         state = self.state()
         outside = self.root / "outside.md"
@@ -225,6 +246,7 @@ class SessionStartTests(unittest.TestCase):
         (state / "profile.md").symlink_to(outside)
         self.assertIsNone(self.run_hook())
 
+    @SYMLINKS
     def test_symlinked_state_directory_is_not_read(self):
         state = self.state()
         alternate = self.root / "alternate"

@@ -17,6 +17,18 @@ reset_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(reset_module)
 
 
+def symlinks_supported():
+    try:
+        with tempfile.TemporaryDirectory() as space:
+            (Path(space) / "probe").symlink_to(space, target_is_directory=True)
+            return True
+    except (OSError, NotImplementedError):
+        return False
+
+
+SYMLINKS = unittest.skipUnless(symlinks_supported(), "symlinks unavailable")
+
+
 class ResetTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="vibe-wise-reset-")
@@ -167,6 +179,7 @@ class ResetTests(unittest.TestCase):
         self.assert_originals(state, originals)
         self.assertFalse((state / "backups").exists())
 
+    @SYMLINKS
     def test_symlinked_state_is_not_followed(self):
         outside = self.root / "outside"
         outside.mkdir()
@@ -175,6 +188,7 @@ class ResetTests(unittest.TestCase):
         self.assertEqual(self.preview()["status"], "no_notes")
         self.assert_originals(target, originals)
 
+    @SYMLINKS
     def test_non_regular_notes_rejected(self):
         state, _ = self.notes()
         path = state / "profile.md"
@@ -188,6 +202,7 @@ class ResetTests(unittest.TestCase):
             self.preview()
         self.assertFalse((state / "backups").exists())
 
+    @SYMLINKS
     def test_symlinked_backup_directory_rejected_before_notes_change(self):
         state, originals = self.notes()
         outside = self.root / "outside"

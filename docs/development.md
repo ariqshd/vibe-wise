@@ -4,6 +4,18 @@ V1 uses Claude Code skills, Markdown instructions, one read-only Python hook,
 and a small Python helper for confirmed learning resets.
 There are no packages to install. Python 3.8+ is sufficient for the hook and tests.
 
+The same skills also install as standalone ZCode/OpenCode skills via
+`install.py`, which renames them to `vibe-wise-learn`/`vibe-wise-reset` and can
+append an auto-restore snippet to a global AGENTS.md. Two portability rules
+keep both layouts working:
+
+- `skills/reset/reset.py` vendors `state_directory` (normally defined in
+  `hooks/session_start.py`) so it runs without the plugin layout. Keep the two
+  definitions in sync.
+- Skill text must not reference `${CLAUDE_PLUGIN_ROOT}` or absolute sibling
+  paths; refer to companion files relative to the SKILL.md's own directory and
+  locate sibling skills by name with Glob.
+
 ## Local checks
 
 ```sh
